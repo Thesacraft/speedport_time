@@ -2,7 +2,6 @@ import json
 import logging
 import os.path
 import subprocess
-import sys
 import threading
 import time
 import webbrowser
@@ -46,7 +45,6 @@ class RequestHandler:
         div_timelimit_yes = self._driver.find_element(By.ID, "timeruleTimeYes")
         remaining_time = self._driver.find_element(By.ID, "var_remainingtime").text
         now = self._driver.find_element(By.ID, "var_time").text
-        # div_timelimit_no = self._driver.find_element(By.ID,"maxtimeNolimit")
         try:
             divs_from_to = []
             for i in range(1, 4):
@@ -96,15 +94,15 @@ class TimeMain:
         self._running = False
         self._menu_options = (
             ("Update timing", None,
-             (("Update every minute", None, lambda x: self._update_config("update_offset",60)),
-              ("Update every 2 minutes", None, lambda x: self._update_config("update_offset",120)),
-              ("Update every 4 minutes", None, lambda x: self._update_config("update_offset",240)),
+             (("Update every minute", None, lambda x: self._update_config("update_offset", 60)),
+              ("Update every 2 minutes", None, lambda x: self._update_config("update_offset", 120)),
+              ("Update every 4 minutes", None, lambda x: self._update_config("update_offset", 240)),
               )
              ), (
                 ("Logging", None, (
-                    ("Debug", None, lambda x: self._update_config("Loglevel","DEBUG")),
-                    ("Info", None, lambda x: self._update_config("Loglevel","INFO")),
-                    ("Warning", None, lambda x: self._update_config("Loglevel","WARNING")),
+                    ("Debug", None, lambda x: self._update_config("Loglevel", "DEBUG")),
+                    ("Info", None, lambda x: self._update_config("Loglevel", "INFO")),
+                    ("Warning", None, lambda x: self._update_config("Loglevel", "WARNING")),
                 )
                  )
             ),
@@ -190,7 +188,7 @@ class TimeMain:
         remaining_time = values['remaining_time']
         if remaining_time == '':
             remaining_time = 'Unbeschränkt'
-        hov_text += f"Verbleibende Zeit: { remaining_time }\n"
+        hov_text += f"Verbleibende Zeit: {remaining_time}\n"
         for item in (values["from_to_1"], values["from_to_2"], values["from_to_3"]):
             if item[0]:
                 hov_text += f"Du kannst dich zwischen {item[1]} - {item[2]} Verbinden\n"
@@ -212,7 +210,7 @@ class TimeMain:
         self._request_handler.quit()
 
     def run(self):
-        thread_mainloop = threading.Thread(target=self._mainloop,daemon=True)
+        thread_mainloop = threading.Thread(target=self._mainloop, daemon=True)
         thread_mainloop.start()
         self._logger.info("Starting Mainloop")
 
