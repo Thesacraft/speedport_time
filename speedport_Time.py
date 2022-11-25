@@ -183,7 +183,7 @@ Shell.Run("speedport_Time.py"),0
                 f"Automatically clearing the logs, because the file was getting to big({size_in_mb}MB)!")
             self._clear_log()
         self._systray = SysTrayIcon(self._icon_icon, "Starting...", self._menu_options,
-                                    on_quit=lambda x: self._on_quit(),default_menu_index=11)
+                                    on_quit=lambda x: self._on_quit(),default_menu_index=7)
         self._systray.start()
         self._logger.info("Starting Systray")
 
