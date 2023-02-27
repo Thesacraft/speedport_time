@@ -120,7 +120,7 @@ class TimeMain:
         standard_config = """{
 "Loglevel": "INFO",
 "icon_path": "icon.ico",
-"update_offset": 60,
+"update_offset": 120,
 "hide_cmd":"hide.vbs"
 }"""
         standard_vbs = """
