@@ -67,7 +67,7 @@ def _clean_message(message: list) -> str:
     length = len(max(message, key=len)) + 4
     if length < 30:
         length = 30
-    final_message = f'\n{"#" * (length + 2)}\n'
+    final_message = f'\n\n{"#" * (length + 2)}\n'
     for line in message:
         final_message += f"#{line:^{length}}#\n"
     final_message += f'{"#" * (length + 2)}\n'
@@ -80,13 +80,13 @@ def _author():
 
 class TimeMain:
     def __init__(self, config_path: str = "config.json", debug: bool = False, path_icon: str = "icon.ico"):
-        self._logger = logging.getLogger("speedport_Time")
+
         self._config_path = config_path
+        self._log_level = "INFO"
         self._load_config()
         self._log_file = "logfile-speedport-time.log"
         self._debug = debug
         self._offset = 60
-        self._log_level = "INFO"
         self._setup_logging()
         self._request_handler = RequestHandler(self._logger, debug=self._debug)
         self._systray: SysTrayIcon = None
@@ -148,13 +148,21 @@ Shell.Run("speedport_Time.py"),0
             return
         config[option] = value
         self._logger.warning(f"Updating {option} to {value}!")
+
         with open(self._config_path, "w") as json_file:
             json_file.write(json.dumps(config))
+        if option == "Loglevel":
+            self._restart("Automatically restarting because of a change of the LogLevel")
 
-    def _restart(self):
+
+
+    def _restart(self,reason:str=None):
         command = f'taskkill /F /PID {os.getpid()} && start {self._hide_cmd}'
         self._on_quit()
-        self._logger.info(_clean_message(["Restarting..."]))
+        if reason is not None and self._log_level == "DEBUG":
+            self._logger.info(_clean_message(["Restarting...",f"Reason:{reason}"]))
+        else:
+            self._logger.info(_clean_message(["Restarting..."]))
         subprocess.Popen(command, shell=True)
 
     def _clear_log(self):
@@ -168,14 +176,15 @@ Shell.Run("speedport_Time.py"),0
         self._logger.warning("Cleared the logs!")
 
     def _setup_logging(self):
-        self._logger.setLevel("INFO")
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
         handler = logging.FileHandler(self._log_file, encoding="utf-8")
         handler.setFormatter(formatter)
-        self._logger.addHandler(handler)
+        logging.basicConfig(handlers=[handler],level=self._log_level)
+        self._logger = logging.getLogger("speedport_Time")
+        self._logger.setLevel(self._log_level)
         self._logger.warning("[start]")
-        self._logger.info(_clean_message(["Starting..."]))
+        self._logger.info(_clean_message(["Starting...",f"Loging-Level: {self._log_level}",f"Updatetiming: {self._offset}"]))
 
     def _start(self):
         size_in_mb = round(os.stat(self._log_file).st_size / (1024 * 1024), 2)
@@ -204,7 +213,7 @@ Shell.Run("speedport_Time.py"),0
         hov_text += f"Verbindung Heute Möglich: {connection_possible}\n"
         hov_text += f"Letztes Update: {values['timestamp']}"
         self._systray.update(self._icon_icon, hov_text)
-        self._logger.info("Updated the hover text")
+        self._logger.debug("Updated the hover text")
 
     def _mainloop(self):
         self._running = True
