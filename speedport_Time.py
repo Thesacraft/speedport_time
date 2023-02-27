@@ -118,7 +118,7 @@ class TimeMain:
 
     def _load_config(self):
         standard_config = """{
-"Loglevel": "DEBUG",
+"Loglevel": "INFO",
 "icon_path": "icon.ico",
 "update_offset": 60,
 "hide_cmd":"hide.vbs"
