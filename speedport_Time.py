@@ -83,10 +83,11 @@ class TimeMain:
 
         self._config_path = config_path
         self._log_level = "INFO"
+        self._offset = 60
         self._load_config()
         self._log_file = "logfile-speedport-time.log"
         self._debug = debug
-        self._offset = 60
+
         self._setup_logging()
         self._request_handler = RequestHandler(self._logger, debug=self._debug)
         self._systray: SysTrayIcon = None
@@ -159,8 +160,8 @@ Shell.Run("speedport_Time.py"),0
     def _restart(self,reason:str=None):
         command = f'taskkill /F /PID {os.getpid()} && start {self._hide_cmd}'
         self._on_quit()
-        if reason is not None and self._log_level == "DEBUG":
-            self._logger.info(_clean_message(["Restarting...",f"Reason:{reason}"]))
+        if reason is not None and self._log_level == "DEBUG" or self._log_level == "INFO":
+            self._logger.info(_clean_message(["Restarting...",f"Reason: {reason}"]))
         else:
             self._logger.info(_clean_message(["Restarting..."]))
         subprocess.Popen(command, shell=True)
@@ -184,19 +185,20 @@ Shell.Run("speedport_Time.py"),0
         self._logger = logging.getLogger("speedport_Time")
         self._logger.setLevel(self._log_level)
         self._logger.warning("[start]")
-        self._logger.info(_clean_message(["Starting...",f"Loging-Level: {self._log_level}",f"Updatetiming: {self._offset}"]))
+        self._logger.info(_clean_message(["Starting...",f"Loging-Level: {self._log_level}",f"Update offset: {self._offset}s"]))
 
     def _start(self):
+        self._check_log_file_size()
+        self._systray = SysTrayIcon(self._icon_icon, "Starting...", self._menu_options,
+                                    on_quit=lambda x: self._on_quit(), default_menu_index=7)
+        self._systray.start()
+        self._logger.info("Starting Systray")
+    def _check_log_file_size(self):
         size_in_mb = round(os.stat(self._log_file).st_size / (1024 * 1024), 2)
         if size_in_mb > 2:
             self._logger.warning(
                 f"Automatically clearing the logs, because the file was getting to big({size_in_mb}MB)!")
             self._clear_log()
-        self._systray = SysTrayIcon(self._icon_icon, "Starting...", self._menu_options,
-                                    on_quit=lambda x: self._on_quit(), default_menu_index=7)
-        self._systray.start()
-        self._logger.info("Starting Systray")
-
     def _update_time(self):
         hov_text = f""
         values = self._request_handler.get_values()
@@ -220,6 +222,7 @@ Shell.Run("speedport_Time.py"),0
         while self._running:
             self._update_time()
             self._load_config()
+            self._check_log_file_size()
             time.sleep(self._offset)
 
     def _on_quit(self):
